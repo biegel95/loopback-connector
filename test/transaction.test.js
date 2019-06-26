@@ -9,7 +9,6 @@ var Transaction = require('../index').Transaction;
 const chai = require('chai');
 const expect = chai.expect;
 const chaiAsPromised = require('chai-as-promised');
-const sinon = require('sinon');
 var testConnector = require('./connectors/test-sql-connector');
 
 var juggler = require('loopback-datasource-juggler');
@@ -17,7 +16,6 @@ var db, Post, Review;
 describe('transactions', function() {
   before(function(done) {
     chai.use(chaiAsPromised);
-    chai.should();
     db = new juggler.DataSource({
       connector: testConnector,
       debug: true,
@@ -259,8 +257,24 @@ describe('transactions', function() {
       return cb(null, 'committed');
     };
     const transactionInstance = new Transaction(connectorObject, {});
-
-    sinon.spy(transactionInstance, 'commit');
     return expect(transactionInstance.commit()).to.eventually.equal('committed');
+  });
+
+  it('can return promise for rollback', function() {
+    const connectorObject = {};
+    connectorObject.rollback = function(connection, cb) {
+      return cb(null, 'rolledback');
+    };
+    const transactionInstance = new Transaction(connectorObject, {});
+    return expect(transactionInstance.rollback()).to.eventually.equal('rolledback');
+  });
+
+  it.skip('can return promise for begin', function() {
+    const connectorObject = {};
+    connectorObject.beginTransaction = function(connection, cb) {
+      return cb(null, 'begun');
+    };
+
+    return expect(Transaction.begin(connectorObject, '')).to.eventually.equal('begun');
   });
 });
