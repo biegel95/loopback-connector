@@ -7,6 +7,7 @@
 var Transaction = require('../index').Transaction;
 
 var expect = require('chai').expect;
+const sinon = require('sinon');
 var testConnector = require('./connectors/test-sql-connector');
 
 var juggler = require('loopback-datasource-juggler');
@@ -246,5 +247,16 @@ describe('transactions', function() {
             });
         });
       });
+  });
+
+  it('can return promise', function() {
+    const connectorObject = {};
+    connectorObject.commit = sinon.stub();
+    const transactionInstance = new Transaction(connectorObject, {});
+
+    transactionInstance.commit();
+    expect(connectorObject.commit.called).to.equal(true);
+    // eslint-disable-next-line no-unused-expressions
+    expect(connectorObject.commit.args[0][1].promise).to.exist;
   });
 });
