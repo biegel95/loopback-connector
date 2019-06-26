@@ -6,7 +6,9 @@
 'use strict';
 var Transaction = require('../index').Transaction;
 
-var expect = require('chai').expect;
+const chai = require('chai');
+const expect = chai.expect;
+const chaiAsPromised = require('chai-as-promised');
 const sinon = require('sinon');
 var testConnector = require('./connectors/test-sql-connector');
 
@@ -14,6 +16,8 @@ var juggler = require('loopback-datasource-juggler');
 var db, Post, Review;
 describe('transactions', function() {
   before(function(done) {
+    chai.use(chaiAsPromised);
+    chai.should();
     db = new juggler.DataSource({
       connector: testConnector,
       debug: true,
@@ -249,14 +253,14 @@ describe('transactions', function() {
       });
   });
 
-  it('can return promise', function() {
+  it('can return promise for commit', function() {
     const connectorObject = {};
-    connectorObject.commit = sinon.stub();
+    connectorObject.commit = function(connection, cb) {
+      return cb(null, 'committed');
+    };
     const transactionInstance = new Transaction(connectorObject, {});
 
-    transactionInstance.commit();
-    expect(connectorObject.commit.called).to.equal(true);
-    // eslint-disable-next-line no-unused-expressions
-    expect(connectorObject.commit.args[0][1].promise).to.exist;
+    sinon.spy(transactionInstance, 'commit');
+    return expect(transactionInstance.commit()).to.eventually.equal('committed');
   });
 });
