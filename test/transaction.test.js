@@ -7,7 +7,8 @@
 var Transaction = require('../index').Transaction;
 
 const chai = require('chai');
-const expect = chai.expect;
+chai.use(require('chai-as-promised'));
+const {expect} = chai;
 const chaiAsPromised = require('chai-as-promised');
 var testConnector = require('./connectors/test-sql-connector');
 
@@ -15,7 +16,6 @@ var juggler = require('loopback-datasource-juggler');
 var db, Post, Review;
 describe('transactions', function() {
   before(function(done) {
-    chai.use(chaiAsPromised);
     db = new juggler.DataSource({
       connector: testConnector,
       debug: true,
